@@ -251,3 +251,277 @@ class VoiceState:
             await self.voice.disconnect()
             self.voice = None
 
+
+class music(commands.Cog):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+        self.voice_states = {}
+
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print(f"Music Loaded")
+
+
+    def get_voice_state(self, ctx: commands.Context):
+        state = self.voice_states.get(ctx.guild.id)
+        if not state:
+            state = VoiceState(self.bot, ctx)
+            self.voice_states[ctx.guild.id] = state
+
+        return state
+
+    def cog_unload(self):
+        for state in self.voice_states.values():
+            self.bot.loop.create_task(state.stop())
+
+    def cog_check(self, ctx: commands.Context):
+        if not ctx.guild:
+            raise commands.NoPrivateMessage('Esse comando não pode ser usado em DMs.')
+
+        return True
+
+    async def cog_before_invoke(self, ctx: commands.Context):
+        ctx.voice_state = self.get_voice_state(ctx)
+
+    async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
+        await ctx.send('Um erro ocorreu: {}'.format(str(error)))
+
+    @commands.command(help="Entra no canal de voz.", name="join", aliases = ["j","entrar"], invoke_without_subcommand=True)
+    async def _join(self, ctx: commands.Context):
+
+        destination = ctx.author.voice.channel
+        if ctx.voice_state.voice:
+            await ctx.voice_state.voice.move_to(destination)          
+
+        ctx.voice_state.voice = await destination.connect()
+
+        em = discord.Embed(title=f"✅ Me conectei no canal  {destination}", color = ctx.author.color)
+        em.set_footer(text=f"Solicitado por {ctx.author.name}")  
+        await ctx.send(embed=em)
+
+    @commands.command(help="Me chamaram a este canal", name="summon", aliases = ["s","chamar"])
+    async def _summon(self, ctx: commands.Context, *, channel: discord.VoiceChannel = None):
+
+        if not channel and not ctx.author.voice:
+            raise VoiceError('Você não está em um canal de voz / não especificou o canal para eu me unir.')
+
+        destination = channel or ctx.author.voice.channel
+        if ctx.voice_state.voice:
+            await ctx.voice_state.voice.move_to(destination)
+            em = discord.Embed(title=f"✅ Fui chamado para o canal  {destination}", color = ctx.author.color)
+            em.set_footer(text=f"Solicitado por {ctx.author.name}")
+            await ctx.send(embed=em)
+
+        ctx.voice_state.voice = await destination.connect()
+
+    @commands.command(help="Sai do canal de voz.", name="leave", aliases = ["l","sair"])
+    async def _leave(self, ctx: commands.Context):
+
+        if not ctx.voice_state.voice:
+            return await ctx.send('Não estou conectado a nenhum canal de voz.')
+
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send("Você não está em nenhum canal de voz.")
+
+        dest = ctx.author.voice.channel
+        await ctx.voice_state.stop()
+        del self.voice_states[ctx.guild.id]
+        em = discord.Embed(title=f":zzz: Desconectado de  {dest}", color = ctx.author.color)
+        em.set_footer(text=f"Solicitado por {ctx.author.name}")            
+        await ctx.send(embed=em)
+
+
+# Pesquisa o que você quiser no youtube
+    @commands.command(help="Procura por algo no youtube", name="search", aliases= ["syt","procurar","pesquisar"])
+    async def syt(self, ctx, *, search):
+        async with ctx.typing():
+            query_string = urllib.parse.urlencode({
+                    "search_query": search
+            })
+            html_content = urllib.request.urlopen(
+                "http://youtube.com/results?" + query_string
+            )
+        
+            search_content = re.findall(r"watch\?v=(\S{11})", html_content.read().decode())
+            yt_search = "http://youtube.com/watch?v=" + search_content[0]
+        
+        await ctx.send("🔎 **Foi isso que encontrei no Youtube. É o que buscava?** <a:neko_pls:846610049203568680>\n" + yt_search)
+
+
+
+    @commands.command(help="Ajusta o volume da minha música.", name="volume", aliases = ["vol"])
+    async def _volume(self, ctx: commands.Context, *, volume:int):
+
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            return await ctx.send('Você não está conectado em nenhum canal de voz.')
+
+        if not ctx.voice_state.is_playing:
+            return await ctx.send('Não estou em nenhum canal de voz.')
+
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send("Você não está no mesmo canal de voz que eu.")
+
+        if volume > 200:
+            return await ctx.send(':x: O volume deve estar entre **0 e 250**')
+
+        ctx.voice_client.source.volume = volume / 100
+        em = discord.Embed(title=f"Volume ajustado para **`{volume}%`**", color = ctx.author.color)
+        em.set_footer(text=f"Solicitado por {ctx.author.name}")    
+        await ctx.send(embed=em)
+
+    @commands.command(help="Mostra o que está tocando atualmente.", name="now", aliases=['n','np', 'current', 'playing', 'agora', 'tocando'])
+    async def _now(self, ctx: commands.Context):
+
+        await ctx.send(embed=ctx.voice_state.current.create_embed())
+
+    @commands.command(name='pause', help='Pausa a música.', aliases=["pa","pausar"])
+    async def _pause(self, ctx):
+        server = ctx.message.guild
+        voice_channel = server.voice_client
+
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send("Você não está no meu canal de voz.")
+
+        voice_channel.pause()
+        await ctx.message.add_reaction('⏯')
+
+    @commands.command(name='resume', help="Retoma o que estava tocando", aliases=["r","continuar","retomar"])
+    async def _resume(self, ctx):
+        server = ctx.message.guild
+        voice_channel = server.voice_client
+
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send("Você não está no meu canal de voz.")
+
+
+        voice_channel.resume()
+        await ctx.message.add_reaction('⏯')
+
+    @commands.command(name="stop", help="Para a lista de reprodução.", aliases=["st","parar"])
+    async def _stop(self, ctx):
+
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            return await ctx.send('Você não está conectado a nenhum canal de voz.')
+
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send("Você não está no meu canal de voz.")
+
+        em = discord.Embed(title=f"🛑 Ok, não tocarei mais músicas.", color = ctx.author.color)
+        em.set_footer(text=f"Solicitado por {ctx.author.name}", icon_url=f"{ctx.author.avatar_url}")
+        await ctx.send(embed=em)
+        voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
+        voice.stop()
+
+    @commands.command(name='skip', help="Pula a música atual.", aliases=["sk","pular"])
+    async def _skip(self, ctx: commands.Context):
+
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            return await ctx.send('Você não está conectado a nenhum canal de voz.')
+
+        if not ctx.voice_state.is_playing:
+            return await ctx.send('Não estou reproduzindo nada...')
+
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send("Você naõ está no meu canal de voz.")
+
+        voter = ctx.message.author
+        if voter == ctx.voice_state.current.requester:
+            await ctx.message.add_reaction('⏭')
+            ctx.voice_state.skip()
+
+        elif voter.id != ctx.voice_state.current.requester:
+            if ctx.voice_state.current.requester not in ctx.author.voice.channel.members:
+                await ctx.message.add_reaction('⏭')
+                ctx.voice_state.skip()
+
+        elif voter.id not in ctx.voice_state.skip_votes:
+            ctx.voice_state.skip_votes.add(voter.id)
+            total_votes = len(ctx.voice_state.skip_votes)
+
+            if total_votes >= 3:
+                await ctx.message.add_reaction('⏭')
+                ctx.voice_state.skip()
+            else:
+                await ctx.send('Voto adicionado, atualmente em **{}/3**'.format(total_votes))
+
+        else:
+            await ctx.send('Você já votou para pular essa música.')
+
+    @commands.command(name='queue', help="Mostra a fila de reprodução atual.", aliases=["q","lista","fila"])
+    async def _queue(self, ctx: commands.Context, *, page: int = 1):
+
+        if len(ctx.voice_state.songs) == 0:
+            return await ctx.send('A fila está vazia.')
+
+        items_per_page = 10
+        pages = math.ceil(len(ctx.voice_state.songs) / items_per_page)
+
+        start = (page - 1) * items_per_page
+        end = start + items_per_page
+
+        queue = ''
+        for i, song in enumerate(ctx.voice_state.songs[start:end], start=start):
+            queue += '`{0}.` [**{1.source.title}**]({1.source.url})\n`{1.source.duration}`\n\n'.format(i + 1, song)
+
+        embed = (discord.Embed(description='**{} Tracks:**\n\n{}'.format(len(ctx.voice_state.songs), queue))
+                 .set_footer(text='Vendo página {}/{}'.format(page, pages)))
+        await ctx.send(embed=embed)
+
+    @commands.command(name='shuffle', help="Randomiza a lista de reprodução.", aliases=["sh"])
+    async def _shuffle(self, ctx: commands.Context):
+
+
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send("Você não está no meu canal de voz.")
+
+        if len(ctx.voice_state.songs) == 0:
+            return await ctx.send('Lista vazia.')
+
+        ctx.voice_state.songs.shuffle()
+        await ctx.message.add_reaction('✅')
+
+    @commands.command(name='remove', help="Remove uma canção da fila de reprodução", aliases=["re","remover"])
+    async def _remove(self, ctx: commands.Context, index: int):
+
+
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send("Você não está no meu canal de voz.")
+
+        if len(ctx.voice_state.songs) == 0:
+            return await ctx.send('Lista vazia.')
+
+        ctx.voice_state.songs.remove(index - 1)
+        await ctx.message.add_reaction('✅')
+        
+
+    @commands.command(name='play', help="Toca uma música.", aliases=["p","reproduzir","tocar"])
+    async def _play(self, ctx: commands.Context, *, search: str):
+
+        if not ctx.voice_state.voice:
+            await ctx.invoke(self._join)
+
+        async with ctx.typing():
+            try:
+                source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop)
+            except YTDLError as e:
+                await ctx.send('**`ERRO`**: {}'.format(str(e)))
+            else:
+                song = Song(source)
+
+                await ctx.voice_state.songs.put(song)
+                await ctx.send(':headphones: Adicionado a lista {}'.format(str(source)))
+
+    @_join.before_invoke
+    @_play.before_invoke
+    async def ensure_voice_state(self, ctx: commands.Context):
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            raise commands.CommandError('Você não está em nenhum canal de voz.')
+
+        if ctx.voice_client:
+            if ctx.voice_client.channel != ctx.author.voice.channel:
+                raise commands.CommandError("Já estou em um canal de voz.")
+
+
+def setup(bot):
+    bot.add_cog(music(bot))
