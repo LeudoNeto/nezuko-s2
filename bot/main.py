@@ -25,7 +25,7 @@ def get_prefix(bot, message):
 bot = commands.Bot(command_prefix=get_prefix, intents=intents, allowed_mentions=discord.AllowedMentions(roles=False, users=True, everyone=False, replied_user=True))
 bot.launch_time = datetime.utcnow()
 
-#bot.load_extension('music') posteriormente
+bot.load_extension('music')
 
 #on_ready: Quando ativo e funcional, retornará mensagem falando que foi conectado
 @bot.event
