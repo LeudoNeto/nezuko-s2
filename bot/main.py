@@ -31,7 +31,7 @@ bot.launch_time = datetime.utcnow()
 @bot.event
 async def on_ready():
     print(f'Fui conectado como {bot.user}')
-    await bot.change_presence(activity=discord.Game(name=f'+help | Bot do GDG'))
+    await bot.change_presence(activity=discord.Game(name=f'+help | 🎵'))
 
 
 #on message: Quando receber qualquer mensagem, retornará o usuário que mandou e a própria mensagem.
