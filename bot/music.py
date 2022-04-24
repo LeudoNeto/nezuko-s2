@@ -523,5 +523,5 @@ class music(commands.Cog):
                 raise commands.CommandError("Já estou em um canal de voz.")
 
 
-def setup(bot):
-    bot.add_cog(music(bot))
+async def setup(bot):
+    await bot.add_cog(music(bot))

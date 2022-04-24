@@ -3,18 +3,21 @@ from discord.ext import commands
 from datetime import datetime
 
 intents = discord.Intents.default()
+intents.message_content = True
 intents.members = True
 
-bot = commands.Bot(command_prefix="+", intents=intents, allowed_mentions=discord.AllowedMentions(roles=False, users=True, everyone=False, replied_user=True))
-bot.launch_time = datetime.utcnow()
+class MyBot(commands.Bot):
+    async def setup_hook(self):
+        await self.load_extension('music')
 
-bot.load_extension('music')
+bot = MyBot(command_prefix="+", intents=intents, help_command=None, allowed_mentions=discord.AllowedMentions(roles=False, users=True, everyone=False, replied_user=True))
+bot.launch_time = datetime.utcnow()
 
 #on_ready: Quando ativo e funcional, retornará mensagem falando que foi conectado
 @bot.event
 async def on_ready():
     print(f'Fui conectado como {bot.user}')
-    await bot.change_presence(activity=discord.Game(name=f'+help | 🎵'))
+    await bot.change_presence(activity=discord.Game(name=f'+help | Bot do GDG 🎵'))
 
 
 #on message: Quando receber qualquer mensagem, retornará o usuário que mandou e a própria mensagem.
