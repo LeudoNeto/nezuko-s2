@@ -25,4 +25,4 @@ async def on_ready():
 async def on_message(message):
     print(f'Mensagem de {message.author}: {message.content}')
 
-bot.run('OTM0MTYyMzE0ODg4ODc2MDUz.YesEcw.dupaPbcNnrm9e-Im7Fq3dBB3ROE') #substitua seu-token-aqui pelo token do bot (Se não souber o que é ou como pega, leia o README.md)
+bot.run('seu-token-aqui') #substitua seu-token-aqui pelo token do bot (Se não souber o que é ou como pega, leia o README.md)
