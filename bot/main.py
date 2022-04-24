@@ -39,5 +39,4 @@ async def on_ready():
 async def on_message(message):
     print(f'Mensagem de {message.author}: {message.content}')
 
-load_dotenv()
-bot.run(os.getenv('Token')) #na pasta .env substitua seu-token-aqui pelo token do bot (Se não souber o que é ou como pega, leia o README.md)
+bot.run('OTM0MTYyMzE0ODg4ODc2MDUz.YesEcw.dupaPbcNnrm9e-Im7Fq3dBB3ROE') #substitua seu-token-aqui pelo token do bot (Se não souber o que é ou como pega, leia o README.md)
