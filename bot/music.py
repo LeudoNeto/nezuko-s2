@@ -174,6 +174,18 @@ class SongQueue(asyncio.Queue):
     def remove(self, index: int):
         del self._queue[index]
 
+    def move(self, index1: int, index2:int):
+        if index1 == index2:
+            raise ValueError('Você não está trocando o lugar da música')
+        if not (0 < index1 <= self.__len__()) or not (0 < index2 <= (self.__len__()+1)):
+            raise IndexError('Pelo menos um dos números que você forneceu não equivalem a alguma música da lista')
+        if index1 < index2:
+            self._queue.insert(index2,self._queue[index1-1])
+            del self._queue[index1-1]
+        else:
+            self._queue.insert(index2-1,self._queue[index1-1])
+            del self._queue[index1]
+
 
 class VoiceState:
     def __init__(self, bot: commands.Bot, ctx: commands.Context):
@@ -493,6 +505,19 @@ class music(commands.Cog):
 
         ctx.voice_state.songs.remove(index - 1)
         await ctx.message.add_reaction('✅')
+
+    @commands.command(name='move', help="Move uma canção da fila de reprodução", aliases=["mo","mover"])
+    async def _move(self, ctx: commands.Context, index1: int, index2: int):
+
+
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send("Você não está no meu canal de voz.")
+
+        if len(ctx.voice_state.songs) == 0:
+            return await ctx.send('Lista vazia.')
+
+        ctx.voice_state.songs.move(index1,index2)
+        await ctx.message.add_reaction('✅')
         
 
     @commands.command(name='play', help="Toca uma música.", aliases=["p","reproduzir","tocar"])
@@ -520,8 +545,7 @@ class music(commands.Cog):
 
         if ctx.voice_client:
             if ctx.voice_client.channel != ctx.author.voice.channel:
-                raise commands.CommandError("Já estou em um canal de voz.")
-
+                raise commands.CommandError("Já estou em um canal de voz diferente.")
 
 async def setup(bot):
     await bot.add_cog(music(bot))
