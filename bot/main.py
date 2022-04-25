@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from datetime import datetime
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -11,7 +10,6 @@ class MyBot(commands.Bot):
         await self.load_extension('music')
 
 bot = MyBot(command_prefix="+", intents=intents, help_command=None, allowed_mentions=discord.AllowedMentions(roles=False, users=True, everyone=False, replied_user=True))
-bot.launch_time = datetime.utcnow()
 
 #on_ready: Quando ativo e funcional, retornará mensagem falando que foi conectado
 @bot.event
