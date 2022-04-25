@@ -163,7 +163,7 @@ class Song:
                  .add_field(name="👀 Visualizações:", value ="`{}`".format(humanize.intword(self.source.views)))
                  .add_field(name="👍 Likes:", value ="`{}`".format(humanize.intword(self.source.likes)))
                  .set_thumbnail(url=self.source.thumbnail)
-                 .set_footer(text=f"Solicitado por {self.requester.name} (In streaming)", icon_url=f"{self.requester.avatar_url}"))
+                 .set_footer(text=f"Solicitado por {self.requester.name}", icon_url=f"{self.requester.avatar}"))
 
         return em
 
