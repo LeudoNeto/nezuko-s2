@@ -10,6 +10,7 @@ from async_timeout import timeout
 from discord.ext import commands
 import re
 import humanize
+from discord.ui import Button, View
 
 youtube_dl.utils.bug_reports_message = lambda: ''
 
@@ -240,7 +241,83 @@ class VoiceState:
 
             self.current.source.volume = self._volume
             self.voice.play(self.current.source, after=self.play_next_song)
-            await self.current.source.channel.send(embed=self.current.create_embed())
+
+            sair = Button(label='Sair', style=discord.ButtonStyle.red, emoji='🚪')
+            pausar = Button(label='Pausar', emoji='⏸')
+            retomar = Button(label='Retomar', style=discord.ButtonStyle.green, emoji='⏯')
+            pular = Button(label='Pular', style=discord.ButtonStyle.blurple, emoji='⏩')
+            lista = Button(label='Lista', style=discord.ButtonStyle.blurple, emoji='📋')
+
+            async def sair_callback(interaction):
+                dest = self._ctx.author.voice.channel
+                em = discord.Embed(title=f":zzz: Desconectado de  {dest}", color = interaction.user.color)
+                em.set_footer(text=f"Solicitado por {interaction.user}") 
+                await interaction.response.edit_message(embed=self.current.create_embed(),view=None)
+                await interaction.channel.send(embed=em)
+                await self._ctx.voice_state.stop()          
+
+            async def pausar_callback(interaction):
+                self._ctx.message.guild.voice_client.pause()
+                em = discord.Embed(title=f"Player pausado ⏸", color = interaction.user.color)
+                em.set_footer(text=f"por {interaction.user}") 
+                await interaction.channel.send(embed=em)
+                await interaction.response.edit_message(embed=self.current.create_embed(),view=viewcomresume)
+
+            async def retomar_callback(interaction):
+                self._ctx.message.guild.voice_client.resume()
+                em = discord.Embed(title=f"Player retomado ⏯", color = interaction.user.color)
+                em.set_footer(text=f"por {interaction.user}") 
+                await interaction.channel.send(embed=em)
+                await interaction.response.edit_message(embed=self.current.create_embed(),view=viewcompause)
+            
+            async def pular_callback(interaction):
+                await interaction.response.edit_message(embed=self.current.create_embed(),view=None)
+                await interaction.message.add_reaction('⏭')
+                em = discord.Embed(title=f"Música pulada ⏭", color = interaction.user.color)
+                em.set_footer(text=f"por {interaction.user}") 
+                await interaction.channel.send(embed=em)
+                self._ctx.voice_state.skip()
+            
+            async def lista_callback(interaction):
+                page = 1
+                if len(self._ctx.voice_state.songs) == 0:
+                    return await self._ctx.send('A fila está vazia.')
+
+                items_per_page = 10
+                pages = math.ceil(len(self._ctx.voice_state.songs) / items_per_page)
+
+                start = (page - 1) * items_per_page
+                end = start + items_per_page
+
+                queue = ''
+                for i, song in enumerate(self._ctx.voice_state.songs[start:end], start=start):
+                    queue += '`{0}.` [**{1.source.title}**]({1.source.url})\n`{1.source.duration}`\n\n'.format(i + 1, song)
+
+                embed = (discord.Embed(description='**{} Tracks:**\n\n{}'.format(len(self._ctx.voice_state.songs), queue))
+                     .set_footer(text='Vendo página {}/{}'.format(page, pages)))
+                await interaction.message.add_reaction('📋')
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+            
+            sair.callback = sair_callback
+            pausar.callback = pausar_callback
+            retomar.callback = retomar_callback
+            pular.callback = pular_callback
+            lista.callback = lista_callback
+
+            viewcompause = View()
+            viewcomresume = View()
+
+            viewcompause.add_item(sair)
+            viewcompause.add_item(pausar)
+            viewcompause.add_item(pular)
+            viewcompause.add_item(lista)
+
+            viewcomresume.add_item(sair)
+            viewcomresume.add_item(retomar)
+            viewcomresume.add_item(pular)
+            viewcomresume.add_item(lista)
+
+            await self.current.source.channel.send(embed=self.current.create_embed(),view=viewcompause)
 
             await self.next.wait()
 
