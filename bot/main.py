@@ -1,9 +1,8 @@
+#pip install -U git+https://github.com/Rapptz/discord.py    no terminal
 import discord
 from discord.ext import commands
 
-intents = discord.Intents.default()
-intents.message_content = True
-intents.members = True
+intents = discord.Intents.all()
 
 class MyBot(commands.Bot):
     async def setup_hook(self):
