@@ -11,6 +11,7 @@ from discord.ext import commands
 import re
 import humanize
 from discord.ui import Button, View
+from pytube import Playlist
 
 youtube_dl.utils.bug_reports_message = lambda: ''
 
@@ -81,26 +82,8 @@ class YTDLSource(discord.PCMVolumeTransformer):
         if data is None:
             raise YTDLError('Couldn\'t find anything that matches `{}`'.format(search))
 
-        if 'entries' in data:       #para playlists
-            info = []
-            for music in data['entries']:
-                music_url = ('https://www.youtube.com/watch?v={}'.format(music['url']))
-                partial = functools.partial(cls.ytdl.extract_info, music_url, download=False, process=False)
-                song_data = await loop.run_in_executor(None, partial)
-                process_info = song_data
-                webpage_url = process_info['webpage_url']
-                partial = functools.partial(cls.ytdl.extract_info, webpage_url, download=False)
-                processed_info = await loop.run_in_executor(None, partial)
-                song = processed_info
-                info.append(cls(ctx, discord.FFmpegPCMAudio(song['url'], **cls.FFMPEG_OPTIONS), data=song))
-
-            return info
-
-        elif 'entries' not in data:
+        if 'entries' not in data:
             process_info = data
-            webpage_url = process_info['webpage_url']
-            partial = functools.partial(cls.ytdl.extract_info, webpage_url, download=False)
-            processed_info = await loop.run_in_executor(None, partial)
         else:
             process_info = None
             for entry in data['entries']:
@@ -111,13 +94,16 @@ class YTDLSource(discord.PCMVolumeTransformer):
             if process_info is None:
                 raise YTDLError('Couldn\'t find anything that matches `{}`'.format(search))
 
+        webpage_url = process_info['webpage_url']
+        partial = functools.partial(cls.ytdl.extract_info, webpage_url, download=False)
+        processed_info = await loop.run_in_executor(None, partial)
+
         if processed_info is None:
             raise YTDLError('Couldn\'t fetch `{}`'.format(webpage_url))
 
-        if 'entries' not in processed_info: #link de música única direto
+        if 'entries' not in processed_info:
             info = processed_info
-
-        else:               #atualmente para quando pesquisa
+        else:
             info = None
             while info is None:
                 try:
@@ -618,18 +604,37 @@ class music(commands.Cog):
         if not ctx.voice_state.voice:
             await ctx.invoke(self._join)
 
-        async with ctx.typing():
+        ctx.send(ctx.voice_state.songs)
+
+        if 'playlist' in search:
+            playlist = Playlist(search)
+            url = playlist.video_urls[0]
             try:
-                source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop)
+                source = await YTDLSource.create_source(ctx, url, loop=self.bot.loop)
             except YTDLError as e:
                 await ctx.send('**`ERRO`**: {}'.format(str(e)))
             else:
-                if type(source) == list:
-                    for music in source:
-                        song = Song(music)
+                song = Song(source)
 
-                        await ctx.voice_state.songs.put(song)
-                    await ctx.send(f':headphones: Foram adicionadas `{len(source)} músicas` a lista')
+                await ctx.voice_state.songs.put(song)
+            await ctx.send(f':headphones: Foram adicionadas `{playlist.length} músicas` da playlist `{playlist.title}`a lista')
+
+            for url in playlist.video_urls[1:playlist.length]:
+                try:
+                    source = await YTDLSource.create_source(ctx, url, loop=self.bot.loop)
+                except YTDLError as e:
+                    await ctx.send('**`ERRO`**: {}'.format(str(e)))
+                else:
+                    song = Song(source)
+
+                    await ctx.voice_state.songs.put(song)
+
+        else:
+            async with ctx.typing():
+                try:
+                    source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop)
+                except YTDLError as e:
+                    await ctx.send('**`ERRO`**: {}'.format(str(e)))
                 else:
                     song = Song(source)
 

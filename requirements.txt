@@ -2,3 +2,4 @@ discord-py
 youtube-dl
 humanize
 PyNaCl
+pytube
