@@ -512,10 +512,10 @@ class music(commands.Cog):
             return await ctx.send("Você não está no meu canal de voz.")
 
         em = discord.Embed(title=f"🛑 Ok, não tocarei mais músicas.", color = ctx.author.color)
-        em.set_footer(text=f"Solicitado por {ctx.author.name}", icon_url=f"{ctx.author.avatar_url}")
+        em.set_footer(text=f"Solicitado por {ctx.author.name}", icon_url=f"{ctx.author.avatar}")
         await ctx.send(embed=em)
-        voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
-        voice.stop()
+        await ctx.voice_state.stop()
+        del self.voice_states[ctx.guild.id]
 
     @commands.command(name='skip', help="Pula a música atual.", aliases=["sk","pular"])
     async def _skip(self, ctx: commands.Context):
