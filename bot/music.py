@@ -142,15 +142,14 @@ class Song:
         self.requester = source.requester
 
     def create_embed(self):
-        em = (discord.Embed(description='```css\n{0.source.title}\n```'.format(self), color=discord.Color.blurple())
+        em = (discord.Embed(description='```css\n{0.source.title}\n```'.format(self), color=discord.Color.from_rgb(244,127,255))
                  .add_field(name='⏱️ Duração:', value=f"`{self.source.duration}`", inline = True)
-                 .add_field(name='👤 Pedido por:', value=self.requester.mention, inline = True)
                  .add_field(name='🎵 Artista:', value='[{0.source.uploader}]({0.source.uploader_url})'.format(self))
-                 .add_field(name="👀 Visualizações:", value ="`{}`".format(humanize.intword(self.source.views)))
-                 .add_field(name="👍 Likes:", value ="`{}`".format(humanize.intword(self.source.likes)))
                  .set_thumbnail(url=self.source.thumbnail)
                  .set_footer(text=f"Solicitado por {self.requester.name}", icon_url=f"{self.requester.avatar}"))
-
+        em.set_author(
+            name=f" Tocando agora: ",
+            icon_url = "https://images-ext-2.discordapp.net/external/wCoxd5EKV3CrmZ6HlEaIS0F-Ggsdk9MyzoLFRVFefsY/https/images-ext-1.discordapp.net/external/DkPCBVBHBDJC8xHHCF2G7-rJXnTwj_qs78udThL8Cy0/%253Fv%253D1/https/cdn.discordapp.com/emojis/859459305152708630.gif")
         return em
 
 
@@ -436,7 +435,7 @@ class music(commands.Cog):
             search_content = re.findall(r"watch\?v=(\S{11})", html_content.read().decode())
             yt_search = "http://youtube.com/watch?v=" + search_content[0]
         
-        await ctx.send("🔎 **Foi isso que encontrei no Youtube. É o que buscava?** <a:neko_pls:846610049203568680>\n" + yt_search)
+        await ctx.send("🔎 **Foi isso que encontrei no Youtube. É o que buscava?** 🕵️‍♀️\n" + yt_search)
 
 
 
@@ -603,8 +602,6 @@ class music(commands.Cog):
 
         if not ctx.voice_state.voice:
             await ctx.invoke(self._join)
-
-        ctx.send(ctx.voice_state.songs)
 
         if 'playlist' in search:
             playlist = Playlist(search)
