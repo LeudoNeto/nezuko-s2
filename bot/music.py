@@ -317,9 +317,11 @@ class VoiceState:
             viewcomresume.add_item(pular)
             viewcomresume.add_item(lista)
 
-            await self.current.source.channel.send(embed=self.current.create_embed(),view=viewcompause)
+            now_playing = await self.current.source.channel.send(embed=self.current.create_embed(),view=viewcompause)
 
             await self.next.wait()
+
+            await now_playing.delete()
 
     def play_next_song(self, error=None):
         if error:
