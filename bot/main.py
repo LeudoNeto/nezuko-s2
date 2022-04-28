@@ -8,6 +8,7 @@ class MyBot(commands.Bot):
     async def setup_hook(self):
         await self.load_extension('music')
         await self.load_extension('others')
+        await self.load_extension('funny')
 
 bot = MyBot(command_prefix="+", intents=intents, help_command=None, allowed_mentions=discord.AllowedMentions(roles=False, users=True, everyone=False, replied_user=True))
 
