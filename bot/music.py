@@ -6,7 +6,6 @@ import random
 import urllib
 import discord
 import youtube_dl
-from async_timeout import timeout
 from discord.ext import commands
 import re
 from discord.ui import Button, View
@@ -231,12 +230,7 @@ class VoiceState:
             self.next.clear()
 
             if not self.loop:
-                try:
-                    async with timeout(180):  # 3 minutes
-                        self.current = await self.songs.get()
-                except asyncio.TimeoutError:
-                    self.bot.loop.create_task(self.stop())
-                    return
+                self.current = await self.songs.get()
                     
             self.current.source.volume = self._volume
             self.voice.play(self.current.source, after=self.play_next_song)
@@ -327,6 +321,8 @@ class VoiceState:
                 name=f"📀 Tocou antes: ")
 
             await now_playing.edit(embed=before,view=None)
+
+            self.current = None
 
     def play_next_song(self, error=None):
         if error:
@@ -422,7 +418,6 @@ class music(commands.Cog):
 
         dest = ctx.author.voice.channel
         await ctx.voice_state.stop()
-        del self.voice_states[ctx.guild.id]
         em = discord.Embed(title=f":zzz: Desconectado de  {dest}", color = ctx.author.color)
         em.set_footer(text=f"Solicitado por {ctx.author.name}")            
         await ctx.send(embed=em)
@@ -468,7 +463,7 @@ class music(commands.Cog):
 
     @commands.command(help="Mostra o que está tocando atualmente.", name="now", aliases=['n','np', 'current', 'playing', 'agora', 'tocando'])
     async def _now(self, ctx: commands.Context):
-        
+
                 await ctx.send(embed=ctx.voice_state.current.create_embed())
 
     @commands.command(name='pause', help='Pausa a música.', aliases=["pa","pausar"])
@@ -507,7 +502,6 @@ class music(commands.Cog):
         em.set_footer(text=f"Solicitado por {ctx.author.name}", icon_url=f"{ctx.author.avatar}")
         await ctx.send(embed=em)
         await ctx.voice_state.stop()
-        del self.voice_states[ctx.guild.id]
 
     @commands.command(name='skip', help="Pula a música atual.", aliases=["sk","pular"])
     async def _skip(self, ctx: commands.Context):
@@ -608,6 +602,7 @@ class music(commands.Cog):
     async def _play(self, ctx: commands.Context, *, search: str):
 
         if not ctx.voice_state.voice:
+            ctx.voice_state.current = None
             await ctx.invoke(self._join)
 
         if 'playlist' in search:
