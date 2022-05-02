@@ -9,7 +9,6 @@ import youtube_dl
 from async_timeout import timeout
 from discord.ext import commands
 import re
-import humanize
 from discord.ui import Button, View
 from pytube import Playlist
 
@@ -238,7 +237,7 @@ class VoiceState:
                 except asyncio.TimeoutError:
                     self.bot.loop.create_task(self.stop())
                     return
-
+                    
             self.current.source.volume = self._volume
             self.voice.play(self.current.source, after=self.play_next_song)
 
@@ -254,7 +253,7 @@ class VoiceState:
                 em.set_footer(text=f"Solicitado por {interaction.user}") 
                 await interaction.response.edit_message(embed=self.current.create_embed(),view=None)
                 await interaction.channel.send(embed=em)
-                await self._ctx.voice_state.stop()          
+                await self._ctx.voice_state.stop()
 
             async def pausar_callback(interaction):
                 self._ctx.message.guild.voice_client.pause()
@@ -281,7 +280,7 @@ class VoiceState:
             async def lista_callback(interaction):
                 page = 1
                 if len(self._ctx.voice_state.songs) == 0:
-                    return await self._ctx.send('A fila está vazia.')
+                    return await interaction.response.send_message('A fila está vazia.', ephemeral=True)
 
                 items_per_page = 10
                 pages = math.ceil(len(self._ctx.voice_state.songs) / items_per_page)
@@ -321,7 +320,13 @@ class VoiceState:
 
             await self.next.wait()
 
-            await now_playing.delete()
+            before = (discord.Embed(description='```css\n{0.source.title}\n```'.format(self.current), color=discord.Color.from_rgb(244,127,255))
+                 .set_thumbnail(url=self.current.source.thumbnail)
+                 .set_footer(text=f"Solicitado por {self.current.requester.name}", icon_url=f"{self.current.requester.avatar}"))
+            before.set_author(
+                name=f"📀 Tocou antes: ")
+
+            await now_playing.edit(embed=before,view=None)
 
     def play_next_song(self, error=None):
         if error:
@@ -463,8 +468,8 @@ class music(commands.Cog):
 
     @commands.command(help="Mostra o que está tocando atualmente.", name="now", aliases=['n','np', 'current', 'playing', 'agora', 'tocando'])
     async def _now(self, ctx: commands.Context):
-
-        await ctx.send(embed=ctx.voice_state.current.create_embed())
+        
+                await ctx.send(embed=ctx.voice_state.current.create_embed())
 
     @commands.command(name='pause', help='Pausa a música.', aliases=["pa","pausar"])
     async def _pause(self, ctx):
