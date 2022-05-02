@@ -464,7 +464,23 @@ class music(commands.Cog):
     @commands.command(help="Mostra o que está tocando atualmente.", name="now", aliases=['n','np', 'current', 'playing', 'agora', 'tocando'])
     async def _now(self, ctx: commands.Context):
 
+        if not ctx.voice_state.voice:
+            if ctx.voice_state.current:
+                await ctx.send('Não estou tocando nada no momento, mas ao sair eu estava tocando:')
+                em = (discord.Embed(description='```css\n{0.source.title}\n```'.format(ctx.voice_state.current), color=discord.Color.from_rgb(244,127,255))
+                    .add_field(name='⏱️ Duração:', value=f"`{ctx.voice_state.current.source.duration}`", inline = True)
+                    .add_field(name='🎵 Artista:', value='[{0.source.uploader}]({0.source.uploader_url})'.format(ctx.voice_state.current))
+                    .set_thumbnail(url=ctx.voice_state.current.source.thumbnail)
+                    .set_footer(text=f"Solicitado por {ctx.voice_state.current.requester.name}", icon_url=f"{ctx.voice_state.current.requester.avatar}"))
+                await ctx.send(embed=em)
+            else:
+                await ctx.send('Eu não estou tocando nada.')
+
+        else:
+            if ctx.voice_state.current:
                 await ctx.send(embed=ctx.voice_state.current.create_embed())
+            else:
+                await ctx.send('Eu não estou tocando nada.')
 
     @commands.command(name='pause', help='Pausa a música.', aliases=["pa","pausar"])
     async def _pause(self, ctx):
