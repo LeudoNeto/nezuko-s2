@@ -242,6 +242,10 @@ class VoiceState:
             lista = Button(label='Lista', style=discord.ButtonStyle.blurple, emoji='📋')
 
             async def sair_callback(interaction):
+
+                if not self._ctx.author.voice or not self._ctx.author.voice.channel or self._ctx.author.voice.channel != self._ctx.guild.me.voice.channel:
+                    return await interaction.response.send_message('Você não está no meu canal de voz', ephemeral=True)
+
                 dest = self._ctx.author.voice.channel
                 em = discord.Embed(title=f":zzz: Desconectado de  {dest}", color = interaction.user.color)
                 em.set_footer(text=f"Solicitado por {interaction.user}") 
@@ -413,8 +417,11 @@ class music(commands.Cog):
         if not ctx.voice_state.voice:
             return await ctx.send('Não estou conectado a nenhum canal de voz.')
 
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            return await ctx.send('Você não está conectado em nenhum canal de voz.')
+
         if ctx.author.voice.channel != ctx.guild.me.voice.channel:
-            return await ctx.send("Você não está em nenhum canal de voz.")
+            return await ctx.send("Você não está no meu canal de voz.")
 
         dest = ctx.author.voice.channel
         await ctx.voice_state.stop()
