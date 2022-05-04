@@ -73,4 +73,4 @@
 <br>
 
 ## Bot em funcionamento:
-<img src="https://cdn.discordapp.com/attachments/901566024690835467/971510753116971018/2022-05-04_17-23-26.gif" target="_blank">
+![gif](funcionando.gif)
