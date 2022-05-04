@@ -41,7 +41,7 @@
 > 
 > - ` 5. ` Finalmente pode rodar o arquivo `main.py` e o bot estará em funcionamento
 
-## Hosting on Repl.it guide
+## Tutorial de como hostear no Repl.it
 ><a href="https://replit.com/@LeudoNeto/nezuko-s2" target="_blank"><img src="https://repl.it/badge/github/LeudoNeto/nezuko-s2" target="_blank"></a>  <h2> - **Repl.it Fork**</h2>
 >
 > - ` 1. ` Na barra da esquerda procure por `Secrets (Environemnt)` e clique nisso

@@ -637,7 +637,7 @@ class music(commands.Cog):
 
         if not search:
             em = discord.Embed(title = 'Talvez você não saiba usar o bot ainda', description= f"Envie {bot_prefix}help para receber mais ajuda", color = ctx.author.color)
-            em.add_field(name= "Como usar:", value=f"{bot_prefix}{ctx.invoked_with} [Pesquisa ou URL]\n Com isso irei procurar o que você mandou e adicionar a fila.\n")
+            em.add_field(name= "Como usar:", value=f"{bot_prefix}{ctx.invoked_with} [Pesquisa ou URL]\n Com isso irei procurar o que você mandou e adicionar à fila.\n")
             em.add_field(name= "Exemplo:", value=f"{bot_prefix}{ctx.invoked_with} `Hey Jude` - Procura por Hey Jude no You Tube e pega a primeira música encontrada, colocando-a na fila",inline=False)
             
             nameandaliases = ["play","p","reproduzir","tocar"]
@@ -663,9 +663,11 @@ class music(commands.Cog):
                     song = Song(source)
 
                     await ctx.voice_state.songs.put(song)
-                await ctx.send(f':headphones: Foram adicionadas `{playlist.length} músicas` da playlist `{playlist.title}`a lista')
+                em = discord.Embed(title = 'Adicionado à fila',description=f':headphones: Foram adicionadas `{playlist.length} músicas` da playlist `{playlist.title}` à lista', color = ctx.author.color)
+                em.set_footer(text=f"Solicitado por {ctx.author.name}", icon_url=f"{ctx.author.avatar}")
+                await ctx.send(embed=em)
 
-                for url in playlist.video_urls[1:playlist.length]:
+                for url in list(playlist.video_urls)[1:]:
                     try:
                         source = await YTDLSource.create_source(ctx, url, loop=self.bot.loop)
                     except YTDLError as e:
@@ -685,7 +687,10 @@ class music(commands.Cog):
                         song = Song(source)
 
                         await ctx.voice_state.songs.put(song)
-                        await ctx.send(':headphones: Adicionado a lista: {}'.format(str(source)))
+
+                        em = discord.Embed(title = 'Adicionado à fila',description=f':headphones: Adicionado à fila: {str(source)}', color = ctx.author.color)
+                        em.set_footer(text=f"Solicitado por {ctx.author.name}", icon_url=f"{ctx.author.avatar}")
+                        await ctx.send(embed=em)
 
     @_join.before_invoke
     @_play.before_invoke
