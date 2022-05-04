@@ -10,6 +10,7 @@ from discord.ext import commands
 import re
 from discord.ui import Button, View
 from pytube import Playlist
+from config import bot_prefix
 
 youtube_dl.utils.bug_reports_message = lambda: ''
 
@@ -631,8 +632,21 @@ class music(commands.Cog):
         await ctx.message.add_reaction('✅')
         
 
-    @commands.command(name='play', help="Toca uma música.", aliases=["p","reproduzir","tocar"])
-    async def _play(self, ctx: commands.Context, *, search: str):
+    @commands.command(name='play', help="Adiciona uma música na fila para tocar.", aliases=["p","reproduzir","tocar"])
+    async def _play(self, ctx: commands.Context, *, search: str = None):
+
+        if not search:
+            em = discord.Embed(title = 'Talvez você não saiba usar o bot ainda', description= f"Envie {bot_prefix}help para receber mais ajuda", color = ctx.author.color)
+            em.add_field(name= "Como usar:", value=f"{bot_prefix}{ctx.invoked_with} [Pesquisa ou URL]\n Com isso irei procurar o que você mandou e adicionar a fila.\n")
+            em.add_field(name= "Exemplo:", value=f"{bot_prefix}{ctx.invoked_with} `Hey Jude` - Procura por Hey Jude no You Tube e pega a primeira música encontrada, colocando-a na fila",inline=False)
+            
+            nameandaliases = ["play","p","reproduzir","tocar"]
+            nameandaliases.remove(ctx.invoked_with)
+            em.add_field(name="Alternativos:", value=f'{bot_prefix}{nameandaliases[0]}, {bot_prefix}{nameandaliases[1]} ou {bot_prefix}{nameandaliases[2]}',inline=False)
+
+            await ctx.send(embed=em)
+
+        else:
 
             if not ctx.voice_state.voice:
                 ctx.voice_state.current = None
