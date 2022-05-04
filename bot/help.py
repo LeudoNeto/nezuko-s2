@@ -26,7 +26,7 @@ class HelpCommand(commands.HelpCommand):
             embed.description = command.help
         
         embed.add_field(name="Uso:", value=f"```fix\n{bot_prefix}{command.qualified_name} {command.signature}\n```")
-        embed.add_field(name="Alternativos:", value = "\t".join(f"`{aliase}`" for aliase in command.aliases), inline=False)
+        embed.add_field(name="Alternativos:", value = "\t".join(f"`{bot_prefix}{aliase}`" for aliase in command.aliases), inline=False)
 
         await self.get_destination().send(embed=embed)
 
