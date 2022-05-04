@@ -241,6 +241,12 @@ class VoiceState:
             pular = Button(label='Pular', style=discord.ButtonStyle.blurple, emoji='⏩')
             lista = Button(label='Lista', style=discord.ButtonStyle.blurple, emoji='📋')
 
+            self.sair_button = sair
+            self.pausar_button = pausar
+            self.retomar_button = retomar
+            self.pular_button = pular
+            self.lista_button = lista
+
             async def sair_callback(interaction):
 
                 if not self._ctx.author.voice or not self._ctx.author.voice.channel or self._ctx.author.voice.channel != self._ctx.guild.me.voice.channel:
@@ -255,17 +261,15 @@ class VoiceState:
 
             async def pausar_callback(interaction):
                 self._ctx.message.guild.voice_client.pause()
-                em = discord.Embed(title=f"Player pausado ⏸", color = interaction.user.color)
-                em.set_footer(text=f"por {interaction.user}") 
-                await interaction.channel.send(embed=em)
-                await interaction.response.edit_message(embed=self.current.create_embed(),view=viewcomresume)
+                atual = self.current.create_embed()
+                atual.set_footer(text=atual.footer.text+f"\nMúsica pausada por {interaction.user.name}", icon_url=f"{interaction.user.avatar}")
+                await interaction.response.edit_message(embed=atual,view=self.viewcomresume)
 
             async def retomar_callback(interaction):
                 self._ctx.message.guild.voice_client.resume()
-                em = discord.Embed(title=f"Player retomado ⏯", color = interaction.user.color)
-                em.set_footer(text=f"por {interaction.user}") 
-                await interaction.channel.send(embed=em)
-                await interaction.response.edit_message(embed=self.current.create_embed(),view=viewcompause)
+                atual = self.current.create_embed()
+                atual.set_footer(text=atual.footer.text+f"\nMúsica retomada por {interaction.user.name}", icon_url=f"{interaction.user.avatar}")
+                await interaction.response.edit_message(embed=atual,view=self.viewcompause)
             
             async def pular_callback(interaction):
                 await interaction.response.edit_message(embed=self.current.create_embed(),view=None)
@@ -295,26 +299,26 @@ class VoiceState:
                 await interaction.message.add_reaction('📋')
                 await interaction.response.send_message(embed=embed, ephemeral=True)
             
-            sair.callback = sair_callback
-            pausar.callback = pausar_callback
-            retomar.callback = retomar_callback
-            pular.callback = pular_callback
-            lista.callback = lista_callback
+            self.sair_button.callback = sair_callback
+            self.pausar_button.callback = pausar_callback
+            self.retomar_button.callback = retomar_callback
+            self.pular_button.callback = pular_callback
+            self.lista_button.callback = lista_callback
 
-            viewcompause = View()
-            viewcomresume = View()
+            self.viewcompause = View()
+            self.viewcomresume = View()
 
-            viewcompause.add_item(sair)
-            viewcompause.add_item(pausar)
-            viewcompause.add_item(pular)
-            viewcompause.add_item(lista)
+            self.viewcompause.add_item(sair)
+            self.viewcompause.add_item(pausar)
+            self.viewcompause.add_item(pular)
+            self.viewcompause.add_item(lista)
 
-            viewcomresume.add_item(sair)
-            viewcomresume.add_item(retomar)
-            viewcomresume.add_item(pular)
-            viewcomresume.add_item(lista)
+            self.viewcomresume.add_item(sair)
+            self.viewcomresume.add_item(retomar)
+            self.viewcomresume.add_item(pular)
+            self.viewcomresume.add_item(lista)
 
-            now_playing = await self.current.source.channel.send(embed=self.current.create_embed(),view=viewcompause)
+            self.now_playing = await self.current.source.channel.send(embed=self.current.create_embed(),view=self.viewcompause)
 
             await self.next.wait()
 
@@ -324,7 +328,7 @@ class VoiceState:
             before.set_author(
                 name=f"📀 Tocou antes: ")
 
-            await now_playing.edit(embed=before,view=None)
+            await self.now_playing.edit(embed=before,view=None)
 
             self.current = None
 
@@ -498,7 +502,10 @@ class music(commands.Cog):
             return await ctx.send("Você não está no meu canal de voz.")
 
         voice_channel.pause()
-        await ctx.message.add_reaction('⏯')
+
+        atual = ctx.voice_state.current.create_embed()
+        atual.set_footer(text=atual.footer.text+f"\nMúsica pausada por {ctx.author.name}", icon_url=f"{ctx.author.avatar}")
+        await ctx.voice_state.now_playing.edit(embed=atual,view=ctx.voice_state.viewcomresume)
 
     @commands.command(name='resume', help="Retoma o que estava tocando", aliases=["r","continuar","retomar"])
     async def _resume(self, ctx):
@@ -510,7 +517,10 @@ class music(commands.Cog):
 
 
         voice_channel.resume()
-        await ctx.message.add_reaction('⏯')
+        
+        atual = ctx.voice_state.current.create_embed()
+        atual.set_footer(text=atual.footer.text+f"\nMúsica retomada por {ctx.author.name}", icon_url=f"{ctx.author.avatar}")
+        await ctx.voice_state.now_playing.edit(embed=atual,view=ctx.voice_state.viewcompause)
 
     @commands.command(name="stop", help="Para a lista de reprodução.", aliases=["st","parar"])
     async def _stop(self, ctx):
@@ -624,24 +634,13 @@ class music(commands.Cog):
     @commands.command(name='play', help="Toca uma música.", aliases=["p","reproduzir","tocar"])
     async def _play(self, ctx: commands.Context, *, search: str):
 
-        if not ctx.voice_state.voice:
-            ctx.voice_state.current = None
-            await ctx.invoke(self._join)
+            if not ctx.voice_state.voice:
+                ctx.voice_state.current = None
+                await ctx.invoke(self._join)
 
-        if 'playlist' in search:
-            playlist = Playlist(search)
-            url = playlist.video_urls[0]
-            try:
-                source = await YTDLSource.create_source(ctx, url, loop=self.bot.loop)
-            except YTDLError as e:
-                await ctx.send('**`ERRO`**: {}'.format(str(e)))
-            else:
-                song = Song(source)
-
-                await ctx.voice_state.songs.put(song)
-            await ctx.send(f':headphones: Foram adicionadas `{playlist.length} músicas` da playlist `{playlist.title}`a lista')
-
-            for url in playlist.video_urls[1:playlist.length]:
+            if 'playlist' in search:
+                playlist = Playlist(search)
+                url = playlist.video_urls[0]
                 try:
                     source = await YTDLSource.create_source(ctx, url, loop=self.bot.loop)
                 except YTDLError as e:
@@ -650,18 +649,29 @@ class music(commands.Cog):
                     song = Song(source)
 
                     await ctx.voice_state.songs.put(song)
+                await ctx.send(f':headphones: Foram adicionadas `{playlist.length} músicas` da playlist `{playlist.title}`a lista')
 
-        else:
-            async with ctx.typing():
-                try:
-                    source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop)
-                except YTDLError as e:
-                    await ctx.send('**`ERRO`**: {}'.format(str(e)))
-                else:
-                    song = Song(source)
+                for url in playlist.video_urls[1:playlist.length]:
+                    try:
+                        source = await YTDLSource.create_source(ctx, url, loop=self.bot.loop)
+                    except YTDLError as e:
+                        await ctx.send('**`ERRO`**: {}'.format(str(e)))
+                    else:
+                        song = Song(source)
 
-                    await ctx.voice_state.songs.put(song)
-                    await ctx.send(':headphones: Adicionado a lista: {}'.format(str(source)))
+                        await ctx.voice_state.songs.put(song)
+
+            else:
+                async with ctx.typing():
+                    try:
+                        source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop)
+                    except YTDLError as e:
+                        await ctx.send('**`ERRO`**: {}'.format(str(e)))
+                    else:
+                        song = Song(source)
+
+                        await ctx.voice_state.songs.put(song)
+                        await ctx.send(':headphones: Adicionado a lista: {}'.format(str(source)))
 
     @_join.before_invoke
     @_play.before_invoke
