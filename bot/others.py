@@ -11,7 +11,7 @@ class others(commands.Cog):
     self.bot = bot
 
   #Comando de teste/ping
-  @commands.command(name="ping")
+  @commands.command(name="ping", aliases = ['latency'])
   async def ping(self, ctx: commands.Context):
         """
         Pong!
@@ -36,14 +36,14 @@ class others(commands.Cog):
         embed.set_thumbnail(url="https://cdn.discordapp.com/avatars/933420163326423041/3507f298a2c64325b6843d4e7c6fe4b2.png?width=465&height=473")
         await ctx.send(embed=embed)
   
-  @commands.command(name="git")
+  @commands.command(name="git",aliases = ['github'])
   async def git(self, ctx: commands.Context):
         """
         Código fonte do bot
         """
         await ctx.send("Pode revisar meu código fonte em: https://github.com/LeudoNeto/nezuko-s2")
   
-  @commands.command(name="invite")
+  @commands.command(name="invite",aliases = ['convidar'])
   async def invite(self, ctx: commands.Context):
       """
       Links para convidar o bot para um servidor
