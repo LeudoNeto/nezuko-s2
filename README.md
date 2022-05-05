@@ -2,6 +2,10 @@
     <h1>Nezuko S2 🎶</h1>
 </div>
 
+### Nezuko S2 é o primeiro bot brasileiro de
+### música open-source escrito em python.
+#
+
 <div style="display: inline_block">
     <a href="https://github.com/LeudoNeto/nezuko-s2/fork" target="_blank"><img src="https://img.shields.io/github/forks/LeudoNeto/nezuko-s2.svg" target="_blank"></a>
     <a href="https://github.com/LeudoNeto/nezuko-s2" target="_blank"><img src="https://img.shields.io/github/stars/LeudoNeto/nezuko-s2.svg" target="_blank"></a>
@@ -19,22 +23,22 @@
 ## Diferenciais:
 ✅ Suporte completo para hostear 24/7 gratuitamente no Repl.it
 <div>
-    <a href="https://replit.com/@LeudoNeto/nezuko-s2" target="_blank"><img src="https://cdn.discordapp.com/attachments/901566024690835467/971500158942609478/replit_host.png" height="120" target="_blank"></a>
+    <a href="https://replit.com/@LeudoNeto/nezuko-s2" target="_blank"><img src="https://cdn.discordapp.com/attachments/901566024690835467/971500158942609478/replit_host.png" height="100" target="_blank"></a>
 </div><br>
 ✅ Sistema completo de botões
 <div style="display: inline_block">
     <img src="https://cdn.discordapp.com/attachments/901566024690835467/971500135005708329/botoes.png" height="120" target="_blank">
-    <img src="https://cdn.discordapp.com/attachments/901566024690835467/971500149434122250/menu_do_help.png" height="120" target="_blank">
+    <img src="https://cdn.discordapp.com/attachments/901566024690835467/971500149434122250/menu_do_help.png" height="100" target="_blank">
 </div><br>
 ✅ Suporte a playlists
 <div>
-    <img src="https://cdn.discordapp.com/attachments/901566024690835467/971501865487441960/playlists.png" height="200" target="_blank">
+    <img src="https://cdn.discordapp.com/attachments/901566024690835467/971501865487441960/playlists.png" height="150" target="_blank">
 </div><br>
 =
 ✅ Comandos "move" e "remove"
 <div style="display: inline_block">
-    <img src="https://cdn.discordapp.com/attachments/901566024690835467/971504462902480916/queue_1.png" height="150" target="_blank">
-    <img src="https://cdn.discordapp.com/attachments/901566024690835467/971504480006832218/queue_2.png" height="150" target="_blank">
+    <img src="https://cdn.discordapp.com/attachments/901566024690835467/971504462902480916/queue_1.png" height="120" target="_blank">
+    <img src="https://cdn.discordapp.com/attachments/901566024690835467/971504480006832218/queue_2.png" height="120" target="_blank">
 </div><br>
 ✅ Todos os comandos de música tem versão alternativa em português
 <div>
