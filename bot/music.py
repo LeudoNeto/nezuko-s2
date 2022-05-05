@@ -250,7 +250,7 @@ class VoiceState:
 
             async def sair_callback(interaction):
 
-                if not self._ctx.author.voice or not self._ctx.author.voice.channel or self._ctx.author.voice.channel != self._ctx.guild.me.voice.channel:
+                if not interaction.user.voice or not interaction.user.voice.channel or interaction.user.voice.channel != self._ctx.guild.me.voice.channel:
                     return await interaction.response.send_message('Você não está no meu canal de voz', ephemeral=True)
 
                 dest = self._ctx.author.voice.channel
