@@ -27,7 +27,7 @@
 </div><br>
 ✅ Sistema completo de botões
 <div style="display: inline_block">
-    <img src="https://cdn.discordapp.com/attachments/901566024690835467/971500135005708329/botoes.png" height="120" target="_blank">
+    <img src="https://cdn.discordapp.com/attachments/901566024690835467/971849708781842452/botoes.png" height="120" target="_blank">
     <img src="https://cdn.discordapp.com/attachments/901566024690835467/971500149434122250/menu_do_help.png" height="120" target="_blank">
 </div><br>
 ✅ Suporte a playlists
