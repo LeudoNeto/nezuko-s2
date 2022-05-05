@@ -78,3 +78,8 @@
 
 ## Bot em funcionamento:
 ![gif](funcionando.gif)
+
+### Se você não sabe como pegar o token do seu bot, ou como usar serviços de pinging (para hostear 24/7 no repl.it) e eu ainda não tiver feito um vídeo explicando, dê uma olhada:
+[Como pegar o token do bot](https://www.youtube.com/watch?v=aI4OmIbkJH8&ab_channel=WomboTech)
+
+[Como usar o Uptime Robot](https://www.youtube.com/watch?v=-5ptk-Klfcw)
