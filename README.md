@@ -2,6 +2,10 @@
     <h1>Nezuko S2 🎶</h1>
 </div>
 
+### Nezuko S2 é o primeiro bot brasileiro de
+### música open-source escrito em python.
+#
+
 <div style="display: inline_block">
     <a href="https://github.com/LeudoNeto/nezuko-s2/fork" target="_blank"><img src="https://img.shields.io/github/forks/LeudoNeto/nezuko-s2.svg" target="_blank"></a>
     <a href="https://github.com/LeudoNeto/nezuko-s2" target="_blank"><img src="https://img.shields.io/github/stars/LeudoNeto/nezuko-s2.svg" target="_blank"></a>
