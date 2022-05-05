@@ -401,7 +401,7 @@ class music(commands.Cog):
         em.set_footer(text=f"Solicitado por {ctx.author.name}")  
         await ctx.send(embed=em)
 
-    @commands.command(help="Me chamaram a este canal", name="summon", aliases = ["s","chamar"])
+    @commands.command(help="Chama o bot para um canal", name="summon", aliases = ["s","chamar"])
     async def _summon(self, ctx: commands.Context, *, channel: discord.VoiceChannel = None):
 
         if not channel and not ctx.author.voice:
@@ -466,9 +466,9 @@ class music(commands.Cog):
             return await ctx.send("Você não está no mesmo canal de voz que eu.")
 
         if volume > 200:
-            return await ctx.send(':x: O volume deve estar entre **0 e 250**')
+            return await ctx.send(':x: O volume deve estar entre **0 e 200**')
 
-        ctx.voice_client.source.volume = volume / 100
+        ctx.voice_client.source.volume = volume / 75
         em = discord.Embed(title=f"Volume ajustado para **`{volume}%`**", color = ctx.author.color)
         em.set_footer(text=f"Solicitado por {ctx.author.name}")    
         await ctx.send(embed=em)
